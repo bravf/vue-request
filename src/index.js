@@ -1,7 +1,7 @@
-<script>
 const VueRequestMap = {
   // requestKey: {
   //   run () => {},
+  //   runFactory () => {},
   //   cancel () => {},
   //   fetcher () => {},
   //   state: {
@@ -11,7 +11,7 @@ const VueRequestMap = {
   //   }
   // }
 }
-export default {
+export const VueRequest = {
   props: {
     requestKey: String,
     fetcher: {
@@ -96,20 +96,17 @@ export default {
       }
     },
     getVNode (h) {
-      let $node
       const request = this.request
       if (this.$scopedSlots.default) {
-        $node = this.$scopedSlots.default({
+        const $node = this.$scopedSlots.default({
           ...request,
         })
+        if ($node && ($node.length > 1 || !$node[0].tag)) {
+          return h(this.tag, $node)
+        }
+        return $node
       }
-      if (this.$slots.default) {
-        $node = this.$slots.default
-      }
-      if ($node && ($node.length > 1 || !$node[0].tag)) {
-        return h(this.tag, $node)
-      }
-      return $node
+      return null
     }
   },
   render (h) {
@@ -122,4 +119,3 @@ export default {
     }
   }
 }
-</script>

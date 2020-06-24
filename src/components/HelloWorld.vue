@@ -1,5 +1,6 @@
-<template>
-  <div>
+<template lang="html">
+  <div class="test">
+  
   <vue-request requestKey="getData" :fetcher="getData">
     <template v-slot="{ state, run, runFactory, cancel }">
       <div class="search">
@@ -13,13 +14,13 @@
         <div v-if="state.error">{{ state.error }}</div>
         <div v-if="state.data">
           <h2>搜索记录</h2>
-          <div v-for="query in state.data">{{query}}</div>
+          <div :key="query" v-for="query in state.data">{{query}}</div>
         </div>
       </div>
     </template>
   </vue-request>
 
-  <vue-request requestKey="getData">
+  <!-- <vue-request requestKey="getData">
     <template v-slot="{ state, run }">
       <div class="search">
         <input type="text" v-model="search.words"/>
@@ -31,12 +32,12 @@
         <div v-if="state.error">{{ state.error }}</div>
       </div>
     </template>
-  </vue-request>
+  </vue-request> -->
   </div>
 </template>
 
 <script>
-import VueRequest from './VueRequest.vue'
+import { VueRequest } from '../index'
 
 export default {
   components: {
