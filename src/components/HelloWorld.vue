@@ -6,6 +6,7 @@
       <div class="search">
         <input type="text" v-model="search.words"/>
         <button @click="run(search.words)" :disabled="state.loading">search</button>
+        <button @click="cancel();run(search.words)">research</button>
         <button @click="runFactory(loadMore)(search.words)" :disabled="state.loading">search load more</button>
         <button @click="cancel">cancel</button>
       </div>
@@ -68,7 +69,7 @@ export default {
           else {
             resolve([words +  ~~(Math.random() * 100)])
           }
-        }, 1000)
+        }, 3000)
       })
     }
   },

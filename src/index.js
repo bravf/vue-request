@@ -8,6 +8,7 @@ const VueRequestMap = {
   //     loading: false,
   //     error: null,
   //     data: null,
+  //     promise: null,
   //   }
   // }
 }
@@ -44,11 +45,13 @@ export const VueRequest = {
         run: () => {},
         cancel: () => {
           request.state.loading = false
+          request.state.promise = null
         },
         state: {
           loading: false,
           error: null,
           data: null,
+          promise: null,
         },
       }
       const runFactory = (handler = dataHandler) => {
@@ -59,15 +62,14 @@ export const VueRequest = {
             return
           }
           state.loading = true
-          fetcher(...args).then(data => {
-            // 如果被 cancel 了，不执行结果
-            if (!state.loading) {
+          const promise = state.promise = fetcher(...args).then(data => {
+            if (promise !== state.promise) {
               return
             }
             handler(state, data)
             state.loading = false
           }).catch(err => {
-            if (!state.loading) {
+            if (promise !== state.promise) {
               return
             }
             state.error = err

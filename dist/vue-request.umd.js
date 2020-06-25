@@ -3185,6 +3185,7 @@ var VueRequestMap = {// requestKey: {
   //     loading: false,
   //     error: null,
   //     data: null,
+  //     promise: null,
   //   }
   // }
 };
@@ -3222,11 +3223,13 @@ var VueRequest = {
         run: function run() {},
         cancel: function cancel() {
           request.state.loading = false;
+          request.state.promise = null;
         },
         state: {
           loading: false,
           error: null,
-          data: null
+          data: null,
+          promise: null
         }
       };
 
@@ -3242,16 +3245,15 @@ var VueRequest = {
           }
 
           state.loading = true;
-          fetcher.apply(void 0, arguments).then(function (data) {
-            // 如果被 cancel 了，不执行结果
-            if (!state.loading) {
+          var promise = state.promise = fetcher.apply(void 0, arguments).then(function (data) {
+            if (promise !== state.promise) {
               return;
             }
 
             handler(state, data);
             state.loading = false;
           }).catch(function (err) {
-            if (!state.loading) {
+            if (promise !== state.promise) {
               return;
             }
 
