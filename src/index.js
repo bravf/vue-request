@@ -1,7 +1,6 @@
 const VueRequestMap = {
   // requestKey: {
   //   run () => {},
-  //   runFactory () => {},
   //   cancel () => {},
   //   fetcher () => {},
   //   state: {
@@ -40,29 +39,19 @@ export const VueRequest = {
       const dataHandler = (state, data) => {
         state.data = data
       }
-      let request = {
+      const request = {
         fetcher: this.fetcher,
-        run: () => {},
-        cancel: () => {
-          request.state.loading = false
-          request.state.promise = null
-        },
-        state: {
-          loading: false,
-          error: null,
-          data: null,
-          promise: null,
-        },
-      }
-      const runFactory = (handler = dataHandler) => {
-        return (...args) => {
+        run: (...args) => {
+          const isResetHandler = typeof args[0] === 'function'
+          const handler = isResetHandler ? args[0] : dataHandler
+          const fetcherArgs = isResetHandler ? args.slice(1) : args
           const { fetcher, state } = request
           // 处理竞争
           if (state.loading) {
             return
           }
           state.loading = true
-          const promise = state.promise = fetcher(...args).then(data => {
+          const promise = state.promise = fetcher(...fetcherArgs).then(data => {
             if (promise !== state.promise) {
               return
             }
@@ -75,12 +64,17 @@ export const VueRequest = {
             state.error = err
             state.loading = false
           })
-        }
-      }
-      request = {
-        ...request,
-        run: runFactory(),
-        runFactory,
+        },
+        cancel: () => {
+          request.state.loading = false
+          request.state.promise = null
+        },
+        state: {
+          loading: false,
+          error: null,
+          data: null,
+          promise: null,
+        },
       }
       return request
     },

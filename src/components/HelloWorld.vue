@@ -2,12 +2,12 @@
   <div class="test">
   
   <vue-request requestKey="getData" :fetcher="getData">
-    <template v-slot="{ state, run, runFactory, cancel }">
+    <template v-slot="{ state, run, cancel }">
       <div class="search">
         <input type="text" v-model="search.words"/>
         <button @click="run(search.words)" :disabled="state.loading">search</button>
         <button @click="cancel();run(search.words)">research</button>
-        <button @click="runFactory(loadMore)(search.words)" :disabled="state.loading">search load more</button>
+        <button @click="run(loadMore, search.words)" :disabled="state.loading">search load more</button>
         <button @click="cancel">cancel</button>
       </div>
       <div class="result">
@@ -69,7 +69,7 @@ export default {
           else {
             resolve([words +  ~~(Math.random() * 100)])
           }
-        }, 3000)
+        }, 1000)
       })
     }
   },
