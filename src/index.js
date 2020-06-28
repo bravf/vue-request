@@ -1,3 +1,5 @@
+import debounce from 'lodash.debounce'
+import throttle from 'lodash.throttle'
 const VueRequestMap = {
   // requestKey: {
   //   run () => {},
@@ -28,6 +30,16 @@ export const VueRequest = {
       type: Boolean,
       default: false,
     },
+    debounceWait: {
+      type: Number,
+      default: 0,
+    },
+    debounceOptions: Object,
+    throttleWait: {
+      type: Number,
+      default: 0,
+    },
+    throttleOptions: Object,
   },
   data () {
     return {
@@ -39,35 +51,17 @@ export const VueRequest = {
       const dataHandler = (state, data) => {
         state.data = data
       }
-      const request = {
+      let request = {
         fetcher: this.fetcher,
-        run: (...args) => {
-          const isResetHandler = typeof args[0] === 'function'
-          const handler = isResetHandler ? args[0] : dataHandler
-          const fetcherArgs = isResetHandler ? args.slice(1) : args
-          const { fetcher, state } = request
-          // 处理竞争
-          if (state.loading) {
-            return
-          }
-          state.loading = true
-          const promise = state.promise = fetcher(...fetcherArgs).then(data => {
-            if (promise !== state.promise) {
-              return
-            }
-            handler(state, data)
-            state.loading = false
-          }).catch(err => {
-            if (promise !== state.promise) {
-              return
-            }
-            state.error = err
-            state.loading = false
-          })
-        },
         cancel: () => {
           request.state.loading = false
           request.state.promise = null
+        },
+        reset: () => {
+          request.state.loading = false
+          request.state.promise = null
+          request.state.error = null
+          request.state.data = null
         },
         state: {
           loading: false,
@@ -75,6 +69,36 @@ export const VueRequest = {
           data: null,
           promise: null,
         },
+      }
+      const run = (...args) => {
+        const isResetHandler = typeof args[0] === 'function'
+        const handler = isResetHandler ? args[0] : dataHandler
+        const fetcherArgs = isResetHandler ? args.slice(1) : args
+        const { fetcher, state } = request
+        // 处理竞争
+        if (state.loading) {
+          return
+        }
+        state.loading = true
+        const promise = state.promise = fetcher(...fetcherArgs).then(data => {
+          if (promise !== state.promise) {
+            return
+          }
+          handler(state, data)
+          state.loading = false
+        }).catch(err => {
+          if (promise !== state.promise) {
+            return
+          }
+          state.error = err
+          state.loading = false
+        })
+      }
+      request = {
+        ...request,
+        run,
+        runDebounce: debounce(run, this.debounceWait, this.debounceOptions),
+        runThrottle: throttle(run, this.throttleWait, this.throttleOptions),
       }
       return request
     },

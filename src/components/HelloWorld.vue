@@ -1,14 +1,15 @@
 <template lang="html">
   <div class="test">
   
-  <vue-request requestKey="getData" :fetcher="getData">
-    <template v-slot="{ state, run, cancel }">
+  <vue-request requestKey="getData" :fetcher="getData" manual :debounceWait="1000" :debounceOptions="{leading:true}" :throttleWait="1000">
+    <template v-slot="{ state, run, cancel, reset, runDebounce, }">
       <div class="search">
-        <input type="text" v-model="search.words"/>
+        <input type="text" v-model="search.words" @input="cancel(),runDebounce()"/>
         <button @click="run(search.words)" :disabled="state.loading">search</button>
         <button @click="cancel();run(search.words)">research</button>
         <button @click="run(loadMore, search.words)" :disabled="state.loading">search load more</button>
         <button @click="cancel">cancel</button>
+        <button @click="reset">reset</button>
       </div>
       <div class="result">
         <div v-if="state.loading">加载中。。。</div>
@@ -61,6 +62,7 @@ export default {
       }
     },
     getData (words = '') {
+      console.log('getData')
       return new Promise( (resolve, reject) => {
         setTimeout( () => {
           if (this.search.words === 'error') {
